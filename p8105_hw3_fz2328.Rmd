@@ -1,0 +1,27 @@
+---
+title: "p8105_hw3_fz2328"
+author: "Fengdi Zhang"
+date: "2022-10-14"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+## 
+
+
+```{r }
+
+```
+
+## 
+
+
+
+```{r}
+
+```
+
+
