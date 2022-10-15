@@ -10,6 +10,7 @@ library(tidyverse)
 library(dplyr)
 library(readr)
 library(ggridges)
+library(patchwork)
 ```
 
 ## Problem 2
@@ -61,12 +62,71 @@ accel_data %>%
 According to the graph, wee can see that this patient tends to have more activities at certain times during the days, such as 650mins/10:50am, 1000mins/4:40pm, and 1250mins/8:50pm. 
 
 
-## 
+## Problem 3
 
+First, import the data
+```{r, message=FALSE}
+library(p8105.datasets)
+data("ny_noaa")
+```
 
+There are `r nrow(accel_data)` observations in total. The dataset includes `r ncol(ny_noaa)` variables, including `r ls(accel_data)`. There are missing values in these variables: `r names(which(colSums(is.na(ny_noaa))>0))`. The missing values would cause problems when summarizing the variables statistics, restructuring variables, and so on. 
 
+Let's tidy the data first
 ```{r}
+ny_noaa = ny_noaa %>% 
+  separate(date, into = c("year", "month", "day"), sep = "-")
+
+ny_noaa = ny_noaa %>% 
+  mutate(
+    year = as.numeric(year),
+    month = as.numeric(month),
+    day = as.numeric(day),
+    tmax = as.numeric(tmax),
+    tmin = as.numeric(tmin)
+  ) %>% 
+  mutate(
+    prcp = 0.1*prcp, 
+    tmax = 0.1*tmax,
+    tmin = 0.1*tmax
+  )
 
 ```
 
+Now, year, month and day are separate variables. Precipitation, snowfall and snow depth have a unit of mm. Temperatures have a unit of degrees C. 
+
+The most commonly observed values for snowfall is `r names(which.max(table(ny_noaa$snow)))`. This is because New York only have a few days of snowing each year. The other reason can be that there were about one half of the stations report precipitation only. 
+
+
+Now, let's make a two-panel plot showing the average max temperature in January and in July in each station across years.
+```{r, message=FALSE, warning=FALSE}
+ny_noaa %>% 
+  filter(month == 1 | month == 7) %>% 
+  group_by(id, year, month) %>% 
+  mutate(tmax_mean = mean(tmax, na.rm = TRUE)) %>% 
+  ggplot(aes(x = year, y = tmax_mean, group = id)) + 
+  geom_line(alpha = .5) + 
+  facet_grid(. ~ month)
+```
+
+In general, the average max temperature in July is significantly higher than the average max temperature in January. 
+The max temperature in July has a narrower range than the max temperature in January. 
+In January, there are a bunch of outliers above and below the average of tmax. In July, most outliers lie below the average of tmax. 
+Each station has similar temperature change patterns. 
+
+
+Now, let's make a two-panel plot showing (i) `tmax` vs `tmin` for the full dataset; (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
+```{r, message=FALSE, warning=FALSE}
+A = ny_noaa %>% 
+  ggplot(aes(x = tmin, y = tmax, color = month)) + 
+  geom_hex()
+ 
+B = ny_noaa %>%
+  filter(snow > 0 & snow < 100) %>% 
+  ggplot(aes(x = snow, fill = year, group = year)) + 
+  geom_density(alpha = .4, adjust = .5) 
+
+A/B
+  
+```
 
