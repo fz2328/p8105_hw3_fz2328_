@@ -6,15 +6,60 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggridges)
 ```
 
-## 
+## Problem 2
 
+Load, tidy and wrangle the data.
 
-```{r }
-
+```{r, message=FALSE}
+accel_data = 
+      read_csv("dataset/accel_data.csv") %>% 
+      janitor::clean_names() %>%
+      pivot_longer(
+              activity_1:activity_1440,
+              names_to = "minute_day",
+              names_prefix = "activity_",
+              values_to = "activity_counts") %>% 
+      mutate(
+        week_factor = ifelse(day == "Saturday" | day == "Sunday", "weekend", "weekday"),
+        minute_day = as.numeric(minute_day)
+      )
+ 
 ```
+
+The resulting dataset includes `r ncol(accel_data)` variables, including `r ls(accel_data)`. There are `r nrow(accel_data)` observations in total. 
+
+
+```{r, message=FALSE}
+accel_data %>%
+  group_by(week, day) %>%
+  mutate(activity_day_total = sum(activity_counts)) %>% 
+  group_by(week, day, activity_day_total) %>% 
+  summarize() %>% 
+  pivot_wider(
+    names_from = "day",
+    values_from = "activity_day_total") %>% 
+  select(week, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) %>% 
+  knitr::kable(digits = 1)
+```
+
+It seems that the activity counts are much lower in the first 2 days in the first week and during the weekends in the last 2 weeks. Otherwise, there is no obvious trend.
+
+```{r}
+accel_data %>% 
+  group_by(week, day) %>% 
+  ggplot(aes(x = minute_day, y = activity_counts, color = day)) + 
+  geom_point(alpha = .5 ) 
+  
+```
+
+According to the graph, wee can see that this patient tends to have more activities at certain times during the days, such as 650mins/10:50am, 1000mins/4:40pm, and 1250mins/8:50pm. 
+
 
 ## 
 
