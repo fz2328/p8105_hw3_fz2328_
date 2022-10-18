@@ -123,10 +123,11 @@ A = ny_noaa %>%
  
 B = ny_noaa %>%
   filter(snow > 0 & snow < 100) %>% 
-  ggplot(aes(x = snow, fill = year, group = year)) + 
-  geom_density(alpha = .4, adjust = .5) 
+  mutate(year = as.character(year)) %>% 
+  ggplot(aes(x = snow, y = year)) +
+  geom_density_ridges(scale = .85)
 
-A/B
+A/B 
   
 ```
 
