@@ -120,14 +120,14 @@ Now, let's make a two-panel plot showing (i) `tmax` vs `tmin` for the full datas
 A = ny_noaa %>% 
   ggplot(aes(x = tmin, y = tmax, color = month)) + 
   geom_hex()
- 
+  
 B = ny_noaa %>%
   filter(snow > 0 & snow < 100) %>% 
   mutate(year = as.character(year)) %>% 
   ggplot(aes(x = snow, y = year)) +
   geom_density_ridges(scale = .85)
 
-A/B 
+A+B 
   
 ```
 
